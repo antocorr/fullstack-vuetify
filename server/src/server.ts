@@ -3,6 +3,11 @@ import bodyParser from "body-parser";
 import cors from "cors";
 const app = express()
 const port = 3000
+import path from "path";
+import dotenv from 'dotenv';
+dotenv.config({ path: path.join(__dirname, '/../.env') });
+console.log(process.env.ENV);
+import db, { Db } from "./lib/db/MysqlDb"
 app.use(bodyParser.json({ limit: "100mb" })); // to support JSON-encoded bodies
 app.use(
     bodyParser.urlencoded({
@@ -34,26 +39,25 @@ app.get('/users/:name', (req, res) => {
 })
 app.get('/users', (req, res) => {
     console.log("/ requested");
-    res.status(200).json({name: req.params.name})
+    db.pool.query("SELECT * FROM family_members", function (err, rows, fields) {
+        // Connection is automatically released when query resolves
+        res.status(200).json({ success: true, items: rows })
+    });    
     
 })
 
-
-
-const familyMembers = ['Martin', 'Dario', 'Valeria', 'Antonio'];
-
 app.get("/family-members", (req, res) => {
-    console.log("getting fm")
-    res.json({
-        success: true,
-        items: familyMembers
-    })
+    db.pool.query("SELECT * FROM family_members", (err, rows, fields) => {
+        // Connection is automatically released when query resolves
+        if(!err){
+            res.status(200).json({ success: true, items: rows })
+        }else{
+            res.status(200).json({ success: false, items: [] })
+        }
+    });
 })
 app.post("/family-members", (req, res) => {
-    console.log(req.body)
-    familyMembers.push(req.body.name);
-    res.json({
-        success: true,
-        items: familyMembers
-    })
+    const [query, values]: any = Db.buildInsertQuery('family_members', { name: req.body.name, surname: req.body.surname, parent: req.body.parent ? req.body.parent.id : 0});
+    const insert = db.pool.query(query, values);
+    res.status(200).json({ success: true, items: [] })
 })

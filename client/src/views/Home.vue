@@ -1,10 +1,17 @@
 <template>
   <div class="pt-12">
-    <div class="px-12">
-      <v-combobox label="Combobox" :items="family" v-model="familiareScelto"></v-combobox>
+    <div class="px-12" style="max-width: 580px; margin: 0 auto">
+      <v-combobox label="member" :items="family" item-value="id" item-title="name" v-model="familiareScelto"></v-combobox>
       <div>
         <v-btn :loading="loading" color="primary" flat @click="getFamily()">get family</v-btn>
-        <v-btn :loading="loading" color="primary" flat @click="addMember('Alberto')" class="ml-4">Add Alberto</v-btn>
+      </div>
+      <div class="mt-8">
+        <div>
+          <v-text-field label="name" v-model="familyMember.name" />
+          <v-text-field label="surname" v-model="familyMember.surname" />
+          <v-combobox label="parent" :items="[{ name: 'none', id: 0 }, ...family]" item-value="id" item-title="name" v-model="familyMember.parent"></v-combobox>
+        </div>
+        <v-btn :loading="loading" color="primary" flat @click="addMember()">Add Member</v-btn>
       </div>
       <div class="mt-4">
         Familiare: {{ familiareScelto }}
@@ -20,12 +27,16 @@
 <script lang="ts" setup>
 import api from "@/plugins/api"
 import { ref } from "vue";
-let family = ref([]);
+type familyMember ={
+  name: string, surname: string, parent: number
+}
+let family = ref<familyMember[]>([]);
+let familyMember: any = ref({ name: "", surname: "", parent: 0 });
 let loading = ref(false);
 let familiareScelto = ref("");
 const topLoc = ref(top?.location.href);
 
-function getFamily(){
+function getFamily() {
   loading.value = true;
   api.get("family-members").then((res: any) => {
     if (res.success) {
@@ -37,12 +48,13 @@ function getFamily(){
     }
   })
 }
-function addMember(name : string){
+function addMember() {
   loading.value = true;
-  api.post("family-members", {jsonData: {name}}).then((res) => {
-    if(res.success){
+  api.post("family-members", { jsonData: familyMember.value }).then((res) => {
+    if (res.success && familyMember.value) {
       loading.value = false;
-      family.value = res.items;
+      family.value.push(familyMember.value);
+      familyMember.value = {};
       console.log(res);
     }
   })
