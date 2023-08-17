@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "lib": [
+            "es2020"
+        ],
+        "module": "commonjs",
+        "target": "es2020",
+        "outDir": "dist",
+        "strict": false,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+    },
+    "include": [
+        "./src/**/*"
+    ],
+}
